@@ -1,0 +1,14 @@
+# Data and large files
+data/
+LunarSim.x86_64
+LunarSim.tar.xz
+
+# Swap and temporary files
+.run.sh.swp
+*.swp
+*.log
+
+# Archives
+*.zip
+*.tar.gz
+*.tar.xz
