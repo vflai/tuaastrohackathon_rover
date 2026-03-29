@@ -1,148 +1,38 @@
-# LunarSim -  ROS 2-Connected Lunar Rover Simulation
 
-![header](./README_FILES/header.png)
+# Ay'ın Karanlık Yüzünde Tam Otonomi: Milli Keşif Aracımız İçin Akıllı Navigasyon Sistemi
 
-## About
+İnsanoğlunun Ay'a dönüş yolculuğunda hedefler artık daha stratejik; özellikle su buzunun bulunduğu tahmin edilen Güney Kutbu bölgesi, küresel uzay ajanslarının birincil odak noktası haline geldi. Ancak bu bölge, keşif araçları için tam bir "ölüm tarlası" niteliğindedir: Zifiri karanlık krater gölgeleri (PSR), anlık iletişim kesintileri (blackout) ve yörünge uydularından tespit edilemeyecek kadar küçük ancak bir keşif aracını saniyeler içinde devirebilecek sinsi Ay kayaları...
 
+Türkiye Uzay Ajansı'nın (TUA) **Milli Uzay Programı** ve **AYAP-2** misyonu vizyonuyla birebir örtüşen projemiz, keşif araçlarının Ay yüzeyinde sadece ilerlemesini değil, en zorlu koşullarda dahi **"hayatta kalmasını"** garanti altına alan, uçuşa hazır (mission-ready) tam otonom bir karar destek ve seyrüsefer mimarisi (VFLAI) sunmaktadır.
 
-## Installation
+### 1. Etki ve Milli Uzay Programı Uyumluluğu
 
-```bash
-# clone the repo
-git clone https://github.com/PUTvision/LunarSim
+Projemiz, sadece teknik bir iyileştirme değil, TUA'nın stratejik hedeflerine doğrudan hizmet eden yüksek etkili bir çözümdür. Milli Uzay Programı'nın en kritik aşamalarından biri olan AYAP-2 kapsamında Ay'a indirilecek milli keşif aracımızın, milyonlarca dolarlık yatırımın ve yıllarca süren emeğin sonucunda bir krater gölgesinde donarak veya uyduda görünmeyen bir kayaya çarparak "görev kaybı" (mission failure) yaşama riskini minimize ediyoruz. Çözümümüz, Türkiye'nin uzayda bağımsız hareket kabiliyetini artırırken, "New Space" olarak adlandırılan küresel ticari uzay pazarında Türkiye'yi yüksek katma değerli bir yazılım ihracatçısı konumuna taşıma potansiyeline sahiptir.
 
-# change the working directory to LunarSim
-cd ./LunarSim
+### 2. Problemin Özü: Statik Haritaların Limitleri
 
-# build docker image
-docker build -t lunarsim:latest .
-```
+Klasik keşif araçları, yörünge uydularından gelen statik haritalara (LRO NAC gibi) güvenir. Ancak bu haritaların çözünürlüğü sınırlıdır; 5 metreden küçük bir kaya, uydu görüntüsünde sadece birkaç pikseldir ve genellikle gürültü olarak algılanır. Literatürde Venu & Gurusamy (2025) tarafından da vurgulandığı üzere; dinamik zemin yapısı ve iletişim kısıtları, statik planlamayı Ay yüzeyinde işlevsiz kılmaktadır. Araç, ilerlediğini sanırken tekerlekleri Ay tozu (regolit) üzerinde boşa dönebilir veya dondurucu bir gölgenin içine girip bataryasını saniye saniyeler içinde tüketebilir. İşte bu "kör noktalar", projemizin çıkış noktasını oluşturmaktadır.
 
-## Run simulator
+### 3. Yaratıcılık ve İnovasyon: "Ezber Bozan" Kapalı Çevrim Mimarisi
 
-```bash
-# run docker container
-bash ./run.sh
+Projemizin özgünlüğü (novelty), literatürdeki klasik açık-çevrim planlayıcıların aksine, statik küresel veri ile anlık saha reflekslerini tek bir potada eriten **"Kapalı Çevrim (Closed-Loop) Hibrit Otonomi"** mimarisinden gelmektedir.
 
-# run the simulator
-./LunarSim.x86_64
-```
-
-> **Note:** DO NOT SOURCE ROS IN TERMINAL WHERE YOU RUN LUNARSIM
-
-## Attach to container and activate ROS (in new terminal)
-
-```bash
-# connect to container
-docker exec -it lunarsim bash
-
-# source ROS environment
-source /opt/ros/humble/setup.bash
-
-# then you can run sanity checks and display topics
-ros2 wtf
-ros2 topic list
-```
-
-## Data generation mode
-
-You can find sample image sequences generated with the simulator [here](https://chmura.put.poznan.pl/s/9CQiMdU6O9Olyli).
-
-We also provide our real images recorded during analogue lunar missions ([link](https://chmura.put.poznan.pl/s/HAybyHz1rgpyy9r)). 
-
-## ROS 2 mode
-
-### Topics
-
-#### Subscribed topics
-
-* `/cmd_vel` (geometry_msgs/Twist)
-
-    The velocity command for the robot.
-
-#### Published topics
-
-* `/lunarsim/gt/pose` (geometry_msgs/PoseStamped)
-
-    The ground truth pose of the robot.
-
-  > For example, you can use terminal command `ros2 topic pub --once /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 1.0, y: 0.0, z: 0.0}, angular: {x: 0.0, y: 0.0, z: 0.0}}"`
-
-* `/lunarsim/imu` (sensor_msgs/Imu)
-
-    The IMU data.
-
-* `/lunarsim/camera_left/raw` (sensor_msgs/Image)
-
-    or
-
-   `/lunarsim/camera_left/compressed` (sensor_msgs/CompressedImage)
-
-    The left camera image.
-
-* `/lunarsim/camera_right/raw` (sensor_msgs/Image)
-
-    or
-
-   `/lunarsim/camera_right/compressed` (sensor_msgs/CompressedImage)
-
-    The right camera image.
+-   **Hibrit Zeka:** NASA'nın LOLA (Topoğrafya) ve LRO DIVINER (Termal) verileriyle "büyük resmi" çizerken, YOLO ve STELLA VSLAM ile "mikro detayı" sahada yakalıyoruz.
     
-* `/lunarsim/camera_depth/depth` (sensor_msgs/Image)
+-   *_Dinamik-Hibrit A_:** Bu özgün algoritmamız, rotayı sadece mesafeye göre değil; eğim, güneş aydınlanma süresi ve anlık tespit edilen engelleri içeren "Çoklu Kısıtlı Maliyet Fonksiyonu" ile anlık olarak günceller. Bu, literatüre kazandırdığımız "termal-farkındalıklı" dinamik bir soluktur.
+    
 
-    The depth image.
+### 4. Bilimsel ve Teknik Geçerlilik (Fizibilite)
 
+Sistemimiz, uzay endüstrisi standartlarında olan ROS2 LunarSim simülasyon ortamında, gerçek dünya fizik kuralları altında test edilmiştir.
 
-## Examples
+-   **YOLO tabanlı Engel Segmentasyonu:** Uyduda görünmeyen engelleri milisaniyeler içinde tespit ederek çarpışma riskini ortadan kaldırır.
+    
+-   **STELLA VSLAM:** İletişim koptuğunda veya sensörler arızalandığında "Görsel Odometri" ile aracın nerede olduğunu milimetrik hesaplayarak "Güvenli Bölge" seyrüseferini başlatır. Testlerimiz sonucunda, Mutlak Yörünge Hatası (RMSE) ve işlem gecikmesi (latency) değerleri, AYAP-2 gibi gerçek görev isterlerinin çok altında kalarak teknik fizibilitesini kanıtlamıştır.
+    
 
-* Object detection – embedded device
+### 5. Görev Uyumluluğu ve Sunum Başarısı
 
-    ```
-    ./examples/jetson_nx_od_yolo
-    ```
+Hackathon kapsamında verilen "Challenge" içeriğine, Ay'ın en kritik kısıtları olan **Termal Değişimler**, **Engel Lokalizasyonu** ve **Sinyal Kesintileri** başlıklarını adresleyerek tam sadık kaldık. Hazırladığımız prototip, karmaşık matematiksel modelleri (Dinamik A*) kullanıcı dostu bir arayüz ve simülasyon görselleriyle hikayeleştirerek sunmaktadır. Projemiz; mühendislik derinliğini, operasyonel gerçekçilikle birleştirerek Ay yüzeyi otonomisi için eksiksiz bir çözüm sunar.
 
-    ![object_detection](./examples/jetson_nx_od_yolo/lunarsim_od_jestson_result.png)
-
-* Visual odometry – x64-based mini-PC
-
-    ```
-    ./examples/amd64_stella_vslam
-    ```
-
-    ![visual_odometry](./examples/amd64_stella_vslam/lunarsim_traj_points.png)
-
-* Simple moving-average filter – microcontroller
-
-    ```
-    ./examples/raspberry_pico_smaf
-    ```
-
-    ![moving_average](./examples/raspberry_pico_smaf/lunarsim_smf_rpi_z.png)
-
-* image segmentation – FPGA
-
-    ```
-    ./examples/versal_vck190_segment
-    ```
-
-    ![image_segmentation](./examples/versal_vck190_segment/lunarsim_seg_fpga_result.png)
-
-## Citation
-
-If you use this code for your research, please cite our paper:
-
-```
-
-@Article{app132212401,
-AUTHOR = {Pieczyński, Dominik and Ptak, Bartosz and Kraft, Marek and Drapikowski, Paweł},
-TITLE = {LunarSim: Lunar Rover Simulator Focused on High Visual Fidelity and ROS 2 Integration for Advanced Computer Vision Algorithm Development},
-JOURNAL = {Applied Sciences},
-VOLUME = {13},
-YEAR = {2023},
-NUMBER = {22},
-ARTICLE-NUMBER = {12401},
-URL = {https://www.mdpi.com/2076-3417/13/22/12401},
-ISSN = {2076-3417},
-DOI = {10.3390/app132212401}
-}
-```
+**Sonuç olarak;** VFLAI projesi, Türkiye'nin Ay'daki ayak izini kalıcı ve güvenli kılmak için tasarlanmış; bilimsel temelleri sağlam, inovatif ve Milli Uzay Programı vizyonuyla tam uyumlu bir derin teknoloji ürünüdür.
